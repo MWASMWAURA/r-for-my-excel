@@ -1,0 +1,120 @@
+---
+title: "Pivoting Table with R"
+author: "JM Muriuki"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document: default
+  latexengine: default
+  html_document: default
+---
+
+## attach libraries
+```{r}
+library(tidyverse)
+library(readxl)
+library(here)
+library(skimr) # install.packages('skimr')
+library(kableExtra) # install.packages('kableExtra')
+
+```
+
+## getting to know my directory
+```{r}
+getwd()
+```
+
+
+## read in data
+```{r}
+lobsters <- read_excel(here("lobsters.xlsx"),skip=4)
+```
+## pivoting a data 
+```{r}
+#data %>% group_by() %>% summarize()
+```
+
+## group_by one variable
+```{r}
+lobsters %>% group_by(year) %>% summarize(count_by_year = n())
+```
+### when you don't group_by first?
+```{r}
+lobsters %>%  summarise(count=n())
+```
+### what if we only group_by?
+```{r}
+lobsters %>% group_by(year)
+```
+## group_by multiple variables
+```{r}
+lobsters %>%  group_by(site,year) %>% summarise(count_by_siteyear=n())
+```
+## summarize multiple variables
+```{r}
+lobsters %>% group_by(site, year) %>% summarize(count_by_siteyear = n() ,mean_size_mm = mean(size_mm))
+# some of the means are  passed as NA because one or more   values in that year are NA.
+
+lobsters %>% group_by(site, year) %>% summarize(count_by_siteyear =  n(), mean_size_mm = mean(size_mm, na.rm=TRUE), sd_size_mm = sd(size_mm, na.rm=TRUE))
+```
+## Adding a variable assignment to that first line:
+```{r}
+siteyear_summary <- lobsters %>% group_by(site, year) %>% summarize(count_by_siteyear =  n(), mean_size_mm = mean(size_mm, na.rm = TRUE), sd_size_mm = sd(size_mm, na.rm = TRUE))
+```
+### inspect our new variable
+```{r}
+siteyear_summary
+```
+## Table formatting with kable()
+### kable() offers a nice presentation of our table
+```{r}
+## make a table with our new variable
+siteyear_summary %>% kable()
+```
+## Activity
+### Building from our analysis
+```{r}
+siteyear_summary <- lobsters %>% group_by(site,year) %>% summarise(count_by_siteyear= n(),mean_size_mm=mean(size_mm,na.rm = TRUE),median_size_mm=median(size_mm,na.rm=TRUE))
+
+```
+### a ggplot option:
+```{r}
+ggplot(data = siteyear_summary,aes(x=year,y=median_size_mm,color=site))+geom_line()
+```
+### save the image
+```{r}
+ggsave(here("figures","lobsters-line.png"))
+```
+### another option
+```{r}
+ggplot(siteyear_summary,aes(x=year,y=median_size_mm))+geom_col()+facet_wrap(~site)
+```
+### save here
+```{r}
+ggsave(here("figures","lobsters-col.png"))
+```
+## Oh no! They sent me the wrong data
+```{r}
+# now the data becomes
+lobsters <- read_xlsx(here("lobsters2.xlsx"),skip=4)
+# Then the same procedure follows
+```
+## mutate()
+
+###There are a lot of times where you don't want to summarize your data, but you do want to operate beyond the original daa.This is often done b y adding a column.
+```{r}
+lobsters %>% mutate(size_m=size_mm/1000)
+```
+### Adding a column that has the same value repeated
+```{r}
+lobsters_detailed <- lobsters %>% mutate(size_m=size_mm/1000,millenia=2000,observer="Allison Horst")
+```
+## select()
+```{r}
+lobsters_detailed %>% select(date,site,size_m)
+```
+
+
+
+
+
+
