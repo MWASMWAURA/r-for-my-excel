@@ -1,0 +1,10 @@
+---
+title: "Tidying with James"
+author: "JM Muriuki"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document: default
+  latexengine: default
+  html_document: default
+---
+
